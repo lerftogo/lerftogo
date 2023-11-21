@@ -1,0 +1,12 @@
+# ninja log v5
+1	9892	1689642758359617897	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/cylinder_query_gpu.o	c0dec8df2ac3dd0e
+1	10545	1689642759015613315	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/interpolate_gpu.o	16c93f08786ea2cf
+1	10718	1689642759187612116	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/ball_query_gpu.o	2abc66ac8cce11cd
+1	12633	1689642761103598764	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/group_points_gpu.o	f0d6693a5b63db90
+1	13007	1689642761475596176	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/sampling_gpu.o	b13570da5f692874
+1	14358	1689642762819586834	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/interpolate.o	9ba8a70bd2f7a403
+1	14406	1689642762867586503	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/bindings.o	3f44ec0113150bc
+1	15579	1689642764039578372	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/group_points.o	6065f81fc79b3477
+0	16446	1689642764907572360	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/ball_query.o	4b4cae386e3dcad4
+1	16490	1689642764951572055	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/cylinder_query.o	a889c0db2997b161
+1	16524	1689642764987571805	/home/lerf/Documents/robot_lerf/robot_lerf/graspnet_baseline/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/sampling.o	32157af69f3d5a40
