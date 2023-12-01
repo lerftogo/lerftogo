@@ -6,7 +6,6 @@ import tyro
 import os
 import os.path as osp
 from pathlib import Path
-import tqdm
 import open3d as o3d
 import matplotlib
 from typing import List, Dict, Tuple
@@ -27,7 +26,7 @@ from robot_lerf.graspnet_baseline.graspnet_module import GraspNetModule
 from robot_lerf.capture_utils import _generate_hemi
 from robot_lerf.grasp_planner_cmk import UR5GraspPlanner # , UR5_HOME_JOINT, ARM_JOINT_NAMES
 
-import capture as lerf_capture
+# import capture as lerf_capture
 
 
 def get_relevancy_pointcloud(ns_wrapper: NerfstudioWrapper, **kwargs):

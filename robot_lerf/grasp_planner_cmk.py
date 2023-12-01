@@ -77,12 +77,12 @@ class UR5GraspPlanner:
     FLOOR_HEIGHT = -0.16
 
     def __init__(self, urdf_path: Path, root_name="ur5"):
-        self.urdf = yourdfpy.URDF.load(
-            urdf_path, 
-            filename_handler=partial(yourdfpy.filename_handler_magic, dir=urdf_path.parent),
-            load_collision_meshes=True,
-            build_collision_scene_graph=True,
-            )
+        # self.urdf = yourdfpy.URDF.load(
+        #     urdf_path, 
+        #     filename_handler=partial(yourdfpy.filename_handler_magic, dir=urdf_path.parent),
+        #     load_collision_meshes=True,
+        #     build_collision_scene_graph=True,
+        #     )
         # self.motion_planner = UR5MotionPlanning()
         self._server = None
         self.root_name = root_name
