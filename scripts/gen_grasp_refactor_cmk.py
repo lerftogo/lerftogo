@@ -48,7 +48,6 @@ def get_relevancy_pointcloud(ns_wrapper: NerfstudioWrapper, **kwargs):
     if place_pt is not None:
         place_pt = tr.transformations.transform_points(place_pt.unsqueeze(0).cpu().numpy(), ns_wrapper.applied_transform).squeeze()
     lerf_pcd.points = o3d.utility.Vector3dVector(tr.transformations.transform_points(np.asarray(lerf_pcd.points), ns_wrapper.applied_transform)) #nerfstudio pc to world/viser pc
-    lerf_xyz = np.asarray(lerf_pcd.points)
     dino_pcd.points = o3d.utility.Vector3dVector(tr.transformations.transform_points(np.asarray(dino_pcd.points), ns_wrapper.applied_transform))
     lerf_points_o3d = lerf_pcd.points
     dino_points_o3d = dino_pcd.points
@@ -387,7 +386,7 @@ def main(
             lerf_train_button.disabled = True
             import nerfstudio.configs.method_configs as method_configs
 
-            num_steps = 1500
+            num_steps = 3000
             # num_steps = 10000
             config = method_configs.all_methods['lerf-lite']
             config.pipeline.datamanager.data = data
@@ -687,7 +686,7 @@ def main(
                     return
 
             # Get the LERF activation poisntcloud for the given query
-            ns_wrapper.pipeline.model.clip_scales.value = False
+            # ns_wrapper.pipeline.model.clip_scales.value = False
             ns_wrapper.pipeline.image_encoder.set_positives(lerf_word)
             lerf_points_o3d, lerf_relevancy, dino_pcd, pick_object_pt, place_point = get_relevancy_pointcloud(ns_wrapper, table_center=table_center)
             # Visualize the relevancy pointcloud 
@@ -755,7 +754,6 @@ def main(
                 return
 
             scores_threshold = np.quantile(scores, update_overall_scores_threshold.value)
-            # import pdb; pdb.set_trace()
             grasps_selected = [grasp for (ind, grasp) in enumerate(grasps) if scores[ind] > scores_threshold]
             inds_selected = [ind for (ind, grasp) in enumerate(grasps) if scores[ind] > scores_threshold]
 

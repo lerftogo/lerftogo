@@ -119,7 +119,7 @@ class NerfstudioWrapper:
         camera_ray_bundle = camera.generate_rays(camera_indices=0).to(device)
         with torch.no_grad():
             outputs = self.pipeline.model.get_outputs_for_camera_ray_bundle(camera_ray_bundle)
-        outputs['xyz'] = camera_ray_bundle.origins + camera_ray_bundle.directions * outputs['depth_med']
+        outputs['xyz'] = camera_ray_bundle.origins + camera_ray_bundle.directions * outputs['depth']
         for k, v in outputs.items():
             outputs[k] = v.squeeze().cpu().numpy()
         outputs['xyz'] = tr.transformations.transform_points(
@@ -146,9 +146,6 @@ class NerfstudioWrapper:
                 added = temp_list.tolist() if isinstance(temp_list, np.ndarray) else [temp_list]
                 q.extend(added)
                 count += 1
-                # if sum(mask) % 20 == 0 or sum(mask) == 1:
-                #     np.save(f'mask_{sum(mask)}.npy', mask)
-                #     print(count)
         return mask
         
     def rotate_camera(self, curcam, rot, point):
@@ -170,6 +167,7 @@ class NerfstudioWrapper:
         sweep = np.linspace(-np.pi/2,np.pi/2,6,dtype=np.float32)#[-1, -0.5, 0, 0.5, 1, 2]
         # bounding_box_min = (-1.0, -1.0, -1.0)
         # bounding_box_max = (1.0, 1.0, 1.0)
+        dino_dim = 384
         points = []
         rgbs = []
         dinos = []
@@ -179,11 +177,11 @@ class NerfstudioWrapper:
             with torch.no_grad():
                 bundle = mod_curcam.generate_rays(camera_indices=0)
                 outputs = self.pipeline.model.get_outputs_for_camera_ray_bundle(bundle)
-            point = bundle.origins + bundle.directions * outputs["depth_med"]
+            point = bundle.origins + bundle.directions * outputs["depth"]
             point = torch.reshape(point, (-1, 3))
             rgb = torch.reshape(outputs["rgb"], (-1, 3))
             # depth = torch.reshape(outputs["depth"], (-1, 1))
-            dino = torch.reshape(outputs["dino"], (-1, 128))
+            dino = torch.reshape(outputs["dino"], (-1, dino_dim))
             # clip = torch.reshape(outputs["clip"], (-1, 512))
             points.append(point)
             rgbs.append(rgb)
@@ -258,7 +256,7 @@ class NerfstudioWrapper:
         blur = kfilters.BoxBlur((3, 3))
         masked_relevancy = blur(masked_relevancy)[0].permute(1, 2, 0)
         target_idx = torch.topk(masked_relevancy.squeeze().flatten(), 1, largest=True).indices.item() #change for multiple
-        all_points = bundle.origins + bundle.directions * outputs["depth_med"] #change depth to depth_med
+        all_points = bundle.origins + bundle.directions * outputs["depth"]
         all_points = torch.reshape(all_points, (-1, 3))
         target_points = all_points[target_idx]
         image_point = torch.reshape(mask, (curcam.height.item(), curcam.width.item())).unsqueeze(0).repeat(3, 1, 1).float()
@@ -284,7 +282,10 @@ class NerfstudioWrapper:
 
         default_view_cam.camera_to_worlds = camera_to_worlds_zoomed
         bundle = default_view_cam.generate_rays(camera_indices=0)
+        s = time.time()
         outputs = self.pipeline.model.get_outputs_for_camera_ray_bundle(bundle)
+        t = time.time()
+        print("time", t - s)
         dinos = outputs["dino"]
         dinos = dinos.view(-1, dinos.shape[-1])
         _, _, v = torch.pca_lowrank(dinos, niter=5)
@@ -326,7 +327,7 @@ class NerfstudioWrapper:
         blur = kfilters.BoxBlur((3, 3))
         masked_relevancy = blur(masked_relevancy)[0].permute(1, 2, 0)
         target_idx = torch.topk(masked_relevancy.squeeze().flatten(), 1, largest=True).indices.item() #change for multiple
-        all_points = bundle.origins + bundle.directions * outputs["depth_med"] #change depth to depth_med
+        all_points = bundle.origins + bundle.directions * outputs["depth"]
         all_points = torch.reshape(all_points, (-1, 3))
         target_points = all_points[target_idx]
         image_point = torch.reshape(mask, (curcam.height.item(), curcam.width.item())).unsqueeze(0).repeat(3, 1, 1).float()
@@ -362,11 +363,9 @@ class NerfstudioWrapper:
         else:
             self.pipeline.model.step = 0
         curcam = curcam.to(device)
-        # import pdb; pdb.set_trace()
         dino_first_comp_2d, target_points = self.get_dino_first_comp_2d(curcam)
         
         dino_first_comp_2d = dino_first_comp_2d.double().cpu().detach().numpy()
-        # print("dino_first_comp_2d", dino_first_comp_2d)
         if curcam is None:
             return
         px, py, _ = target_points
@@ -437,15 +436,14 @@ class NerfstudioWrapper:
                 bundle.nears = torch.full(s , 0.05, device=device)
                 bundle.fars = torch.full(s, 10, device=device)
                 # outputs = self.get_outputs(bundle.reshape(bundle.shape[0]*bundle.shape[1]), masks=dino_2d_mask)
-                outputs = self.pipeline.model.get_outputs_for_camera_ray_bundle(bundle, masks=dino_2d_mask)
+                outputs = self.pipeline.model.get_outputs_for_camera_ray_bundle(bundle)
             torchvision.utils.save_image(torch.permute(outputs['rgb'], (2, 0, 1)), f"./dino_masked_{i}_rgb.png")
 
-            # import pdb; pdb.set_trace()
-            # lerf_mask = torch.where((outputs['relevancy_1'] > 0) & dino_2d_mask, 1, 0)  #& (torch.abs(outputs['depth_med'].squeeze() - dino_2d_data).unsqueeze(2) < 0.3)
+            # testing if this works:
+            lerf_mask = torch.where((outputs['relevancy_1'] > 0) & (dino_2d_mask.unsqueeze(2) > 0) & (torch.abs(outputs['depth'].squeeze() - dino_2d_data).unsqueeze(2) < 0.3), 1, 0)
             
-            
-            lerf_mask = torch.where((outputs['relevancy_1'] > 0) & (torch.abs(outputs['depth_med'].squeeze() - dino_2d_data).unsqueeze(2) < 0.08), 1, 0)
-            # lerf_mask = torch.where((outputs['relevancy_0'] > 0.61), 1, 0)
+            #ACTUAL:
+            # lerf_mask = torch.where((outputs['relevancy_1'] > 0) & (torch.abs(outputs['depth'].squeeze() - dino_2d_data).unsqueeze(2) < 0.08), 1, 0)
             
             
             # lerf_mask = torch.where((outputs['relevancy_1'] > 0) & (dino_2d_mask > 0).unsqueeze(-1), 1, 0)
@@ -454,7 +452,7 @@ class NerfstudioWrapper:
             # plt.imshow(normalized_relenvancy.squeeze().cpu().numpy())
             # plt.savefig("./dino_masked_lerf_colormap.png")
             
-            point = bundle.origins + bundle.directions * outputs["depth_med"]
+            point = bundle.origins + bundle.directions * outputs["depth"]
             point = torch.reshape(point, (-1, 3))
             rgb = torch.reshape(outputs["rgb"], (-1, 3))
             relevancy = torch.reshape(outputs["relevancy_1"], (-1, 1))
