@@ -1,0 +1,14 @@
+[project]
+name = "robot_lerf"
+version = "0.1.0"
+
+dependencies=[
+    "yourdfpy",
+    "kornia",
+    "torchtyping",
+    "autolab-core",
+    "python-fcl"
+]
+
+[tool.setuptools.packages.find]
+include = ["robot_lerf*","robot_lerf/graspnet_baseline"]
