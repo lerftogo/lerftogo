@@ -20,11 +20,11 @@ pip install -e .
 ```
 
 # Using LERF-TOGO
-Have your data in a folder named `data`
-Run `python scripts/gen_grasp.py`
-Enter data folder name to train/load data
-Enter object;part query in lerf query text box
-Generate grasps
+Have your data in a folder named `data`  
+Run `python scripts/gen_grasp.py`  
+Enter data folder name to train/load data  
+Enter object;part query in lerf query text box  
+Generate grasps  
 
 ## Bibtex
 If you find this useful, please cite the paper!
